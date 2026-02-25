@@ -2,7 +2,7 @@ import pytest
 from unittest.mock import patch, MagicMock
 from main import run_scraper
 
-@patch('main.update_google_doc')
+@patch('main.update_drive_file')
 @patch('main.scrape_documentation')
 @patch('main.load_config')
 def test_main_success(mock_load_config, mock_scrape, mock_gdocs_update):
@@ -12,12 +12,12 @@ def test_main_success(mock_load_config, mock_scrape, mock_gdocs_update):
             {
                 "nome": "Test Doc",
                 "url_base": "https://test.com",
-                "doc_id_destino": "12345"
+                "drive_file_id": "12345"
             }
         ]
     }
     mock_scrape.return_value = "# Extracted Content"
-    mock_gdocs_update.return_value = {"replies": []}
+    mock_gdocs_update.return_value = {"id": "12345"}
     
     # Run
     run_scraper("mock_config.json")
@@ -27,13 +27,13 @@ def test_main_success(mock_load_config, mock_scrape, mock_gdocs_update):
     mock_scrape.assert_called_once_with("https://test.com")
     mock_gdocs_update.assert_called_once_with("12345", "# Extracted Content")
     
-@patch('main.update_google_doc')
+@patch('main.update_drive_file')
 @patch('main.scrape_documentation')
 @patch('main.load_config')
 def test_main_scrape_failure(mock_load_config, mock_scrape, mock_gdocs_update):
     mock_load_config.return_value = {
         "documentacoes": [
-            {"nome": "Test Doc", "url_base": "https://test.com", "doc_id_destino": "12345"}
+            {"nome": "Test Doc", "url_base": "https://test.com", "drive_file_id": "12345"}
         ]
     }
     mock_scrape.return_value = "" # No content extracted
@@ -43,14 +43,14 @@ def test_main_scrape_failure(mock_load_config, mock_scrape, mock_gdocs_update):
     # gdocs should not be updated if scraping failed/returned nothing
     mock_gdocs_update.assert_not_called()
 
-@patch('main.update_google_doc')
+@patch('main.update_drive_file')
 @patch('main.scrape_documentation')
 @patch('main.load_config')
 def test_main_continue_on_error(mock_load_config, mock_scrape, mock_gdocs_update):
     mock_load_config.return_value = {
         "documentacoes": [
-            {"nome": "Fail Doc", "url_base": "https://fail.com", "doc_id_destino": "12345"},
-            {"nome": "Success Doc", "url_base": "https://success.com", "doc_id_destino": "67890"}
+            {"nome": "Fail Doc", "url_base": "https://fail.com", "drive_file_id": "12345"},
+            {"nome": "Success Doc", "url_base": "https://success.com", "drive_file_id": "67890"}
         ]
     }
     

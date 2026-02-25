@@ -19,7 +19,7 @@ def fetch_and_clean_html(url: str) -> str:
         response = requests.get(url, timeout=10)
         response.raise_for_status()
     except requests.RequestException as e:
-        logger.error(f"Failed to fetch {url}: {e}")
+        logger.warning(f"Failed to fetch {url}: {e}")
         return ""
 
     soup = BeautifulSoup(response.text, 'html.parser')
@@ -61,7 +61,7 @@ def scrape_documentation(base_url: str) -> str:
             response = requests.get(current_url, timeout=10)
             response.raise_for_status()
         except requests.RequestException as e:
-            logger.error(f"Failed to fetch {current_url}: {e}")
+            logger.warning(f"Failed to fetch {current_url}: {e}")
             continue
 
         soup = BeautifulSoup(response.text, 'html.parser')

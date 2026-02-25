@@ -8,7 +8,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from src.config_parser import load_config
 from src.scraper import scrape_documentation
-from src.gdocs_client import update_google_doc
+from src.gdrive_client import update_drive_file
 
 logging.basicConfig(
     level=logging.INFO,
@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 def run_scraper(config_path="docs_links.json"):
     """
     Main orchestration function.
-    Loads config, iterates over projects, scrapes them and updates Google Docs.
+    Loads config, iterates over projects, scrapes them and updates Google Drive.
     """
     logger.info("Starting DocScraper workflow...")
     
@@ -35,7 +35,7 @@ def run_scraper(config_path="docs_links.json"):
     for doc in documents:
         nome = doc["nome"]
         url_base = doc["url_base"]
-        doc_id = doc["doc_id_destino"]
+        doc_id = doc["drive_file_id"]
 
         logger.info(f"--- Processing: {nome} ---")
         
@@ -47,8 +47,8 @@ def run_scraper(config_path="docs_links.json"):
                 logger.warning(f"No content extracted for {nome}. Skipping document update.")
                 continue
                 
-            logger.info(f"Extracted {len(markdown_content)} characters. Updating Google Doc...")
-            update_google_doc(doc_id, markdown_content)
+            logger.info(f"Extracted {len(markdown_content)} characters. Updating Google Drive file...")
+            update_drive_file(doc_id, markdown_content)
             
             logger.info(f"Successfully processed {nome}.")
             
