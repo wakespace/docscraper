@@ -1,3 +1,4 @@
+import re
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse
@@ -6,6 +7,39 @@ import logging
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+def clean_text(text: str) -> str:
+    """Condenses 3 or more consecutive newlines into exactly 2."""
+    return re.sub(r'\n{3,}', '\n\n', text)
+
+def chunk_text(text: str, max_words: int = 400000) -> list[str]:
+    """
+    Splits text into chunks, ensuring no chunk exceeds max_words words.
+    Splits at line breaks to preserve code blocks and formatting.
+    """
+    if len(text.split()) <= max_words:
+        return [text]
+
+    chunks = []
+    current_chunk = []
+    current_word_count = 0
+
+    for line in text.split('\n'):
+        line_word_count = len(line.split())
+        
+        # If a single line is impossibly large, we just have to include it (very rare)
+        if current_word_count + line_word_count > max_words and current_chunk:
+            chunks.append('\n'.join(current_chunk))
+            current_chunk = [line]
+            current_word_count = line_word_count
+        else:
+            current_chunk.append(line)
+            current_word_count += line_word_count
+
+    if current_chunk:
+        chunks.append('\n'.join(current_chunk))
+
+    return chunks
 
 def is_internal_link(base_url: str, link_url: str) -> bool:
     """Check if a given link belongs to the same domain as the base URL."""

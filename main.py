@@ -7,7 +7,7 @@ import logging
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from src.config_parser import load_config
-from src.scraper import scrape_documentation
+from src.scraper import scrape_documentation, clean_text, chunk_text
 from src.gdrive_client import update_drive_file
 
 logging.basicConfig(
@@ -47,8 +47,21 @@ def run_scraper(config_path="docs_links.json"):
                 logger.warning(f"No content extracted for {nome}. Skipping document update.")
                 continue
                 
-            logger.info(f"Extracted {len(markdown_content)} characters. Updating Google Drive folder...")
-            update_drive_file(folder_id, nome, markdown_content)
+            markdown_content = clean_text(markdown_content)
+            quantidade_caracteres = len(markdown_content)
+            quantidade_palavras = len(markdown_content.split())
+            
+            chunks = chunk_text(markdown_content, max_words=400000)
+            logger.info(f"Extraídos {quantidade_caracteres} caracteres e {quantidade_palavras} palavras em {len(chunks)} parte(s).")
+            
+            if len(chunks) == 1:
+                logger.info(f"Atualizando Google Drive: {nome}...")
+                update_drive_file(folder_id, nome, chunks[0])
+            else:
+                logger.info(f"Atualizando Google Drive com {len(chunks)} partes...")
+                for i, chunk in enumerate(chunks):
+                    part_name = f"{nome} - Parte {i+1}"
+                    update_drive_file(folder_id, part_name, chunk)
             
             logger.info(f"Successfully processed {nome}.")
             

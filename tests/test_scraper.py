@@ -1,6 +1,31 @@
 import pytest
 import responses
-from src.scraper import fetch_and_clean_html, convert_to_markdown, scrape_documentation
+from src.scraper import fetch_and_clean_html, convert_to_markdown, scrape_documentation, clean_text, chunk_text
+
+def test_clean_text():
+    text_with_extra_newlines = "Line 1\n\n\n\nLine 2\n\n\nLine 3"
+    cleaned = clean_text(text_with_extra_newlines)
+    assert cleaned == "Line 1\n\nLine 2\n\nLine 3"
+
+def test_chunk_text():
+    # 10 words per line, 10 lines = 100 words total
+    text = "\n".join(["word " * 9 + "word" for _ in range(10)])
+    
+    # Should not chunk if under max_words
+    chunks = chunk_text(text, max_words=200)
+    assert len(chunks) == 1
+    assert chunks[0] == text
+    
+    # Needs 3 chunks if max_words=45 (each chunk can only fit 4 lines / 40 words)
+    # Chunk 1: Lines 1,2,3,4 (40 words)
+    # Chunk 2: Lines 5,6,7,8 (40 words)
+    # Chunk 3: Lines 9,10 (20 words)
+    chunks = chunk_text(text, max_words=45)
+    assert len(chunks) == 3
+    assert len(chunks[0].split()) == 40
+    assert len(chunks[1].split()) == 40
+    assert len(chunks[2].split()) == 20
+
 
 @pytest.fixture
 def mock_html():
