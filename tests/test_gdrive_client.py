@@ -4,11 +4,19 @@ from unittest.mock import MagicMock, patch
 from googleapiclient.errors import HttpError
 from src.gdrive_client import update_drive_file
 
-@patch('src.gdrive_client.service_account.Credentials.from_service_account_info')
+def mock_env_vars():
+    return {
+        'GCP_CLIENT_ID': 'fake_client_id',
+        'GCP_CLIENT_SECRET': 'fake_client_secret',
+        'GCP_REFRESH_TOKEN': 'fake_refresh_token'
+    }
+
+@patch('src.gdrive_client.os.environ.get')
+@patch('src.gdrive_client.Credentials')
 @patch('src.gdrive_client.build')
-@patch('src.gdrive_client.os.getenv')
-def test_update_drive_file_creation(mock_getenv, mock_build, mock_credentials):
-    mock_getenv.return_value = '{"project_id": "test"}'
+def test_update_drive_file_creation(mock_build, mock_credentials, mock_environ_get):
+    env_vars = mock_env_vars()
+    mock_environ_get.side_effect = lambda k: env_vars.get(k)
     
     mock_service = MagicMock()
     mock_build.return_value = mock_service
@@ -35,11 +43,12 @@ def test_update_drive_file_creation(mock_getenv, mock_build, mock_credentials):
     
     assert result == {"id": "new_12345"}
 
-@patch('src.gdrive_client.service_account.Credentials.from_service_account_info')
+@patch('src.gdrive_client.os.environ.get')
+@patch('src.gdrive_client.Credentials')
 @patch('src.gdrive_client.build')
-@patch('src.gdrive_client.os.getenv')
-def test_update_drive_file_update(mock_getenv, mock_build, mock_credentials):
-    mock_getenv.return_value = '{"project_id": "test"}'
+def test_update_drive_file_update(mock_build, mock_credentials, mock_environ_get):
+    env_vars = mock_env_vars()
+    mock_environ_get.side_effect = lambda k: env_vars.get(k)
     
     mock_service = MagicMock()
     mock_build.return_value = mock_service
@@ -62,8 +71,9 @@ def test_update_drive_file_update(mock_getenv, mock_build, mock_credentials):
     
     assert result == {"id": "existing_123"}
 
-@patch('src.gdrive_client.os.getenv')
-def test_update_drive_file_missing_credentials(mock_getenv):
-    mock_getenv.return_value = None
-    with pytest.raises(ValueError, match="GOOGLE_CREDENTIALS_JSON environment variable not set"):
+@patch('src.gdrive_client.os.environ.get')
+def test_update_drive_file_missing_credentials(mock_environ_get):
+    mock_environ_get.side_effect = lambda k: None
+    
+    with pytest.raises(ValueError, match="Missing OAuth2 environment variables"):
         update_drive_file("folder_999", "Test Doc", "Text")

@@ -27,7 +27,9 @@ jobs:
 
     - name: Run Scraper
       env:
-        GOOGLE_CREDENTIALS_JSON: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
+        GCP_CLIENT_ID: ${{ secrets.GCP_CLIENT_ID }}
+        GCP_CLIENT_SECRET: ${{ secrets.GCP_CLIENT_SECRET }}
+        GCP_REFRESH_TOKEN: ${{ secrets.GCP_REFRESH_TOKEN }}
         PYTHONPATH: .
       run: |
         python main.py

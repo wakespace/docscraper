@@ -1,8 +1,7 @@
 import os
-import json
-import logging
 import io
-from google.oauth2 import service_account
+import logging
+from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseUpload
 from googleapiclient.errors import HttpError
@@ -16,16 +15,23 @@ def update_drive_file(drive_folder_id: str, nome: str, markdown_content: str):
     """
     Overwrites or creates a plain text file inside the specified Google Drive folder.
     """
-    creds_json_str = os.getenv('GOOGLE_CREDENTIALS_JSON')
-    if not creds_json_str:
-        raise ValueError("GOOGLE_CREDENTIALS_JSON environment variable not set")
-        
+    client_id = os.environ.get('GCP_CLIENT_ID')
+    client_secret = os.environ.get('GCP_CLIENT_SECRET')
+    refresh_token = os.environ.get('GCP_REFRESH_TOKEN')
+
+    if not all([client_id, client_secret, refresh_token]):
+        raise ValueError("Missing OAuth2 environment variables: GCP_CLIENT_ID, GCP_CLIENT_SECRET, or GCP_REFRESH_TOKEN")
+
     try:
-        creds_info = json.loads(creds_json_str)
-        creds = service_account.Credentials.from_service_account_info(
-            creds_info, scopes=SCOPES)
+        creds = Credentials(
+            token=None,
+            refresh_token=refresh_token,
+            token_uri='https://oauth2.googleapis.com/token',
+            client_id=client_id,
+            client_secret=client_secret
+        )
     except Exception as e:
-        raise ValueError(f"Failed to parse credentials: {e}")
+        raise ValueError(f"Failed to initialize credentials: {e}")
 
     try:
         drive_service = build('drive', 'v3', credentials=creds)

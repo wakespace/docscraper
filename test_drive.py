@@ -1,7 +1,6 @@
 import os
-import json
 import io
-from google.oauth2 import service_account
+from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseUpload
 from googleapiclient.errors import HttpError
@@ -12,17 +11,24 @@ TARGET_FILE_ID = "1gKhELT6DiS-5xSXFXxgReyeNITx1BqeS"
 SCOPES = ['https://www.googleapis.com/auth/drive']
 
 def main():
-    print("A autenticar com a Service Account...")
+    print("A autenticar via OAuth 2.0 User Credentials...")
     
-    creds_json_str = os.getenv('GOOGLE_CREDENTIALS_JSON')
-    if not creds_json_str:
-        print("ERRO: A variável de ambiente GOOGLE_CREDENTIALS_JSON não está definida.")
+    client_id = os.environ.get('GCP_CLIENT_ID')
+    client_secret = os.environ.get('GCP_CLIENT_SECRET')
+    refresh_token = os.environ.get('GCP_REFRESH_TOKEN')
+
+    if not all([client_id, client_secret, refresh_token]):
+        print("ERRO: As variáveis GCP_CLIENT_ID, GCP_CLIENT_SECRET, ou GCP_REFRESH_TOKEN não estão definidas.")
         return
 
     try:
-        creds_info = json.loads(creds_json_str)
-        creds = service_account.Credentials.from_service_account_info(
-            creds_info, scopes=SCOPES)
+        creds = Credentials(
+            token=None,
+            refresh_token=refresh_token,
+            token_uri='https://oauth2.googleapis.com/token',
+            client_id=client_id,
+            client_secret=client_secret
+        )
     except Exception as e:
         print(f"ERRO: Falha ao interpretar as credenciais: {e}")
         return
@@ -32,7 +38,7 @@ def main():
     try:
         drive_service = build('drive', 'v3', credentials=creds)
 
-        novo_conteudo = "Integração com o Google Drive a funcionar perfeitamente!"
+        novo_conteudo = "Integração via OAuth 2.0 com o Google Drive a funcionar perfeitamente!"
         
         media = MediaIoBaseUpload(
             io.BytesIO(novo_conteudo.encode('utf-8')),
