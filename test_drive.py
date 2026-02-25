@@ -9,7 +9,7 @@ from googleapiclient.errors import HttpError
 # Preencha esta constante com o ID do ficheiro do Google Drive que deseja testar
 TARGET_FILE_ID = "1gKhELT6DiS-5xSXFXxgReyeNITx1BqeS"
 
-SCOPES = ['https://www.googleapis.com/auth/drive.file']
+SCOPES = ['https://www.googleapis.com/auth/drive']
 
 def main():
     print("A autenticar com a Service Account...")
