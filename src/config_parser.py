@@ -19,7 +19,7 @@ def load_config(filepath: str) -> Dict[str, Any]:
         raise ValueError("Missing 'documentacoes' key in configuration")
 
     for doc in data["documentacoes"]:
-        if not all(k in doc for k in ("nome", "url_base", "drive_file_id")):
+        if not all(k in doc for k in ("nome", "url_base", "drive_folder_id")):
             raise ValueError(f"Invalid document schema in {filepath}. Missing required keys.")
 
     return data

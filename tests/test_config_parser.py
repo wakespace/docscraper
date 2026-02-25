@@ -10,7 +10,7 @@ def test_load_config_success(tmp_path):
             {
                 "nome": "Test Doc",
                 "url_base": "https://test.com",
-                "drive_file_id": "12345"
+                "drive_folder_id": "12345"
             }
         ]
     }
@@ -44,7 +44,7 @@ def test_load_config_missing_documentacoes(tmp_path):
 def test_load_config_invalid_document_schema(tmp_path):
     config_data = {
         "documentacoes": [
-            {"nome": "Test Doc"} # Missing url_base and drive_file_id
+            {"nome": "Test Doc"} # Missing url_base and drive_folder_id
         ]
     }
     config_file = tmp_path / "docs_links.json"

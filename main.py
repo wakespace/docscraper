@@ -35,7 +35,7 @@ def run_scraper(config_path="docs_links.json"):
     for doc in documents:
         nome = doc["nome"]
         url_base = doc["url_base"]
-        doc_id = doc["drive_file_id"]
+        folder_id = doc["drive_folder_id"]
 
         logger.info(f"--- Processing: {nome} ---")
         
@@ -47,8 +47,8 @@ def run_scraper(config_path="docs_links.json"):
                 logger.warning(f"No content extracted for {nome}. Skipping document update.")
                 continue
                 
-            logger.info(f"Extracted {len(markdown_content)} characters. Updating Google Drive file...")
-            update_drive_file(doc_id, markdown_content)
+            logger.info(f"Extracted {len(markdown_content)} characters. Updating Google Drive folder...")
+            update_drive_file(folder_id, nome, markdown_content)
             
             logger.info(f"Successfully processed {nome}.")
             

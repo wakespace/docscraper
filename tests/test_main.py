@@ -12,7 +12,7 @@ def test_main_success(mock_load_config, mock_scrape, mock_gdocs_update):
             {
                 "nome": "Test Doc",
                 "url_base": "https://test.com",
-                "drive_file_id": "12345"
+                "drive_folder_id": "12345"
             }
         ]
     }
@@ -25,7 +25,7 @@ def test_main_success(mock_load_config, mock_scrape, mock_gdocs_update):
     # Verify
     mock_load_config.assert_called_once_with("mock_config.json")
     mock_scrape.assert_called_once_with("https://test.com")
-    mock_gdocs_update.assert_called_once_with("12345", "# Extracted Content")
+    mock_gdocs_update.assert_called_once_with("12345", "Test Doc", "# Extracted Content")
     
 @patch('main.update_drive_file')
 @patch('main.scrape_documentation')
@@ -33,7 +33,7 @@ def test_main_success(mock_load_config, mock_scrape, mock_gdocs_update):
 def test_main_scrape_failure(mock_load_config, mock_scrape, mock_gdocs_update):
     mock_load_config.return_value = {
         "documentacoes": [
-            {"nome": "Test Doc", "url_base": "https://test.com", "drive_file_id": "12345"}
+            {"nome": "Test Doc", "url_base": "https://test.com", "drive_folder_id": "12345"}
         ]
     }
     mock_scrape.return_value = "" # No content extracted
@@ -49,8 +49,8 @@ def test_main_scrape_failure(mock_load_config, mock_scrape, mock_gdocs_update):
 def test_main_continue_on_error(mock_load_config, mock_scrape, mock_gdocs_update):
     mock_load_config.return_value = {
         "documentacoes": [
-            {"nome": "Fail Doc", "url_base": "https://fail.com", "drive_file_id": "12345"},
-            {"nome": "Success Doc", "url_base": "https://success.com", "drive_file_id": "67890"}
+            {"nome": "Fail Doc", "url_base": "https://fail.com", "drive_folder_id": "12345"},
+            {"nome": "Success Doc", "url_base": "https://success.com", "drive_folder_id": "67890"}
         ]
     }
     
@@ -67,4 +67,4 @@ def test_main_continue_on_error(mock_load_config, mock_scrape, mock_gdocs_update
     
     # Verify second doc was still processed
     assert mock_scrape.call_count == 2
-    mock_gdocs_update.assert_called_once_with("67890", "# Success")
+    mock_gdocs_update.assert_called_once_with("67890", "Success Doc", "# Success")

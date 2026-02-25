@@ -7,8 +7,7 @@ from src.gdrive_client import update_drive_file
 @patch('src.gdrive_client.service_account.Credentials.from_service_account_info')
 @patch('src.gdrive_client.build')
 @patch('src.gdrive_client.os.getenv')
-def test_update_drive_file_success(mock_getenv, mock_build, mock_credentials):
-    # Setup mocks
+def test_update_drive_file_creation(mock_getenv, mock_build, mock_credentials):
     mock_getenv.return_value = '{"project_id": "test"}'
     
     mock_service = MagicMock()
@@ -16,51 +15,55 @@ def test_update_drive_file_success(mock_getenv, mock_build, mock_credentials):
     
     mock_files = MagicMock()
     mock_service.files.return_value = mock_files
-    mock_files.update.return_value.execute.return_value = {"id": "12345"}
     
-    # Test
-    result = update_drive_file("12345", "New Context Data")
+    # Mock list() returning empty list (file does not exist)
+    mock_files.list.return_value.execute.return_value = {'files': []}
+    mock_files.create.return_value.execute.return_value = {"id": "new_12345"}
     
-    # Verify environment variable was read
-    mock_getenv.assert_called_with('GOOGLE_CREDENTIALS_JSON')
-    mock_credentials.assert_called_once()
-    mock_build.assert_called_once_with('drive', 'v3', credentials=mock_credentials.return_value)
+    result = update_drive_file("folder_999", "Test Doc", "New Content")
     
-    # Verify API calls
-    mock_service.files().update.assert_called_once()
+    mock_files.list.assert_called_once()
+    assert "name='Test Doc.txt'" in mock_files.list.call_args[1]['q']
+    assert "'folder_999' in parents" in mock_files.list.call_args[1]['q']
     
-    # Extract the args to verify media upload
-    call_args = mock_service.files().update.call_args[1]
-    assert call_args['fileId'] == "12345"
+    mock_files.create.assert_called_once()
+    mock_files.update.assert_not_called()
     
-    media = call_args['media_body']
-    # media is a MediaIoBaseUpload object
-    assert media.mimetype() == 'text/plain'
+    call_args = mock_files.create.call_args[1]
+    assert call_args['body']['name'] == 'Test Doc.txt'
+    assert 'folder_999' in call_args['body']['parents']
     
-    # Check that bytes match
-    assert media._fd.getvalue() == b"New Context Data"
-    
-@patch('src.gdrive_client.os.getenv')
-def test_update_drive_file_missing_credentials(mock_getenv):
-    mock_getenv.return_value = None
-    
-    with pytest.raises(ValueError, match="GOOGLE_CREDENTIALS_JSON environment variable not set"):
-        update_drive_file("12345", "Text")
+    assert result == {"id": "new_12345"}
 
 @patch('src.gdrive_client.service_account.Credentials.from_service_account_info')
 @patch('src.gdrive_client.build')
 @patch('src.gdrive_client.os.getenv')
-def test_update_drive_file_404_not_found(mock_getenv, mock_build, mock_credentials):
+def test_update_drive_file_update(mock_getenv, mock_build, mock_credentials):
     mock_getenv.return_value = '{"project_id": "test"}'
+    
     mock_service = MagicMock()
     mock_build.return_value = mock_service
     
-    # Mock HttpError for 404
-    mock_resp = MagicMock()
-    mock_resp.status = 404
-    http_error = HttpError(resp=mock_resp, content=b'File not found')
+    mock_files = MagicMock()
+    mock_service.files.return_value = mock_files
     
-    mock_service.files().update.return_value.execute.side_effect = http_error
+    # Mock list() returning an existing file ID
+    mock_files.list.return_value.execute.return_value = {'files': [{'id': 'existing_123'}]}
+    mock_files.update.return_value.execute.return_value = {"id": "existing_123"}
     
-    with pytest.raises(HttpError):
-        update_drive_file("wrong_id", "Text")
+    result = update_drive_file("folder_999", "Test Doc", "New Content")
+    
+    mock_files.list.assert_called_once()
+    mock_files.create.assert_not_called()
+    mock_files.update.assert_called_once()
+    
+    call_args = mock_files.update.call_args[1]
+    assert call_args['fileId'] == 'existing_123'
+    
+    assert result == {"id": "existing_123"}
+
+@patch('src.gdrive_client.os.getenv')
+def test_update_drive_file_missing_credentials(mock_getenv):
+    mock_getenv.return_value = None
+    with pytest.raises(ValueError, match="GOOGLE_CREDENTIALS_JSON environment variable not set"):
+        update_drive_file("folder_999", "Test Doc", "Text")
