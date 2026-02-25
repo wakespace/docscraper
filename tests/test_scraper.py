@@ -5,7 +5,6 @@ from src.scraper import fetch_and_clean_html, convert_to_markdown, scrape_docume
 @pytest.fixture
 def mock_html():
     return """
-    <html>
         <head><title>Test Doc</title></head>
         <body>
             <header>Header Content</header>
@@ -13,6 +12,10 @@ def mock_html():
             <main>
                 <h1>Main Title</h1>
                 <p>This is the important content.</p>
+                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==" alt="base64 image"/>
+                <svg width="100" height="100"><circle cx="50" cy="50" r="40" stroke="green" stroke-width="4" fill="yellow" /></svg>
+                <script>console.log("This should be removed");</script>
+                <noscript>Your browser does not support JavaScript!</noscript>
                 <a href="/docs/page2">Page 2</a>
                 <a href="https://external.com">External</a>
             </main>
@@ -37,6 +40,9 @@ def test_fetch_and_clean_html_success(mock_html):
         assert "Nav Content" not in cleaned_html
         assert "Footer Content" not in cleaned_html
         assert "Sidebar Content" not in cleaned_html
+        assert "data:image/png;base64" not in cleaned_html
+        assert "circle cx" not in cleaned_html
+        assert "This should be removed" not in cleaned_html
         assert "Main Title" in cleaned_html
         assert "important content" in cleaned_html
 

@@ -24,8 +24,8 @@ def fetch_and_clean_html(url: str) -> str:
 
     soup = BeautifulSoup(response.text, 'html.parser')
 
-    # Remove unwanted tags
-    for tag in soup(["nav", "footer", "header", "aside", "script", "style"]):
+    # Remove unwanted tags aggressively to avoid base64 data and SVG noise
+    for tag in soup(["nav", "footer", "header", "aside", "script", "style", "svg", "img", "noscript", "form", "iframe", "video", "audio", "canvas", "map", "area", "button", "input", "select", "textarea"]):
         tag.decompose()
 
     # Try to find a main content container, fallback to body
@@ -78,8 +78,8 @@ def scrape_documentation(base_url: str) -> str:
             if full_url.startswith(base_url) and full_url not in visited and full_url not in to_visit:
                 to_visit.append(full_url)
 
-        # Clean HTML
-        for tag in soup(["nav", "footer", "header", "aside", "script", "style"]):
+        # Clean HTML aggressively
+        for tag in soup(["nav", "footer", "header", "aside", "script", "style", "svg", "img", "noscript", "form", "iframe", "video", "audio", "canvas", "map", "area", "button", "input", "select", "textarea"]):
             tag.decompose()
 
         main_content = soup.find("main") or soup.find("article") or soup.find("body") or soup

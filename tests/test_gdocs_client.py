@@ -42,8 +42,34 @@ def test_update_google_doc_success(mock_getenv, mock_build, mock_credentials):
     
     assert len(requests) == 2
     assert 'deleteContentRange' in requests[0]
+    # Check that it deletes from 1 to 49 since end index of last element is 50
+    assert requests[0]['deleteContentRange']['range']['endIndex'] == 49
     assert 'insertText' in requests[1]
     assert requests[1]['insertText']['text'] == "# Updated Content"
+
+@patch('src.gdocs_client.service_account.Credentials.from_service_account_info')
+@patch('src.gdocs_client.build')
+@patch('src.gdocs_client.os.getenv')
+def test_update_google_doc_chunked_inserts(mock_getenv, mock_build, mock_credentials):
+    mock_getenv.return_value = '{"project_id": "test"}'
+    mock_service = MagicMock()
+    mock_build.return_value = mock_service
+    mock_service.documents().get.return_value.execute.return_value = {
+        'body': {'content': [{'endIndex': 10}]}
+    }
+    
+    # 600k chars = 2 chunks (500k + 100k)
+    large_text = "A" * 600000 
+    
+    update_google_doc("12345", large_text)
+    
+    calls = mock_service.documents().batchUpdate.call_args[1]
+    requests = calls['body']['requests']
+    
+    assert len(requests) == 3 # 1 delete + 2 inserts
+    assert 'deleteContentRange' in requests[0]
+    assert requests[1]['insertText']['text'] == "A" * 500000
+    assert requests[2]['insertText']['text'] == "A" * 100000
 
 @patch('src.gdocs_client.os.getenv')
 def test_update_google_doc_missing_credentials(mock_getenv):

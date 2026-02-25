@@ -27,13 +27,14 @@ def update_google_doc(document_id: str, markdown_content: str):
     try:
         service = build('docs', 'v1', credentials=creds)
 
-        # 1. Get the current document to find the total length
+        # 1. Get the current document to find the exact end index
         doc = service.documents().get(documentId=document_id).execute()
         content = doc.get('body').get('content')
         
-        # Calculate the end index (everything except the last character which cannot be deleted)
+        # Calculate the end index (everything except the last newline character which cannot be deleted)
         end_index = 1
         if content:
+            # The last element contains the end index of the body
             end_index = content[-1].get('endIndex') - 1
             
         requests = []
@@ -49,16 +50,21 @@ def update_google_doc(document_id: str, markdown_content: str):
                 }
             })
             
-        # 3. Insert new text at the beginning
-        requests.append({
-            'insertText': {
-                'location': {
-                    'index': 1,
-                },
-                'text': markdown_content
-            }
-        })
+        # 3. Insert new text in chunks to avoid payload size limits
+        MAX_CHARS_PER_REQUEST = 500000 # 500k chars per chunk as a safe limit
+        for i in range(0, len(markdown_content), MAX_CHARS_PER_REQUEST):
+            chunk = markdown_content[i:i + MAX_CHARS_PER_REQUEST]
+            requests.append({
+                'insertText': {
+                    'location': {
+                        'index': 1,
+                    },
+                    'text': chunk
+                }
+            })
 
+        # Process in chunks of 50 requests max for safety or just bulk it if small
+        # Given we chunk the text, there might be a few requests.
         result = service.documents().batchUpdate(
             documentId=document_id, body={'requests': requests}).execute()
             
