@@ -1,0 +1,9 @@
+{
+  "documentacoes": [
+    {
+      "nome": "Exemplo Doc",
+      "url_base": "https://example.com/docs",
+      "doc_id_destino": "1xXXXXXXXXX_XXXXXXXXXXXXXXXXXXXXXXX"
+    }
+  ]
+}
