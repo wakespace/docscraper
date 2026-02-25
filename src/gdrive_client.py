@@ -10,7 +10,7 @@ from googleapiclient.errors import HttpError
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-SCOPES = ['https://www.googleapis.com/auth/drive.file']
+SCOPES = ['https://www.googleapis.com/auth/drive']
 
 def update_drive_file(drive_folder_id: str, nome: str, markdown_content: str):
     """
