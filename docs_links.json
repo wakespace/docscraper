@@ -1,9 +1,16 @@
 {
   "documentacoes": [
     {
-      "nome": "OpenRouter Doc.txt",
+      "nome": "OpenRouter",
       "url_base": "https://openrouter.ai/docs",
-      "drive_folder_id": "1NRsnEf0_my9qi97cuhJ05TOu5Y6iVGF8"
+      "drive_folder_id": "1NRsnEf0_my9qi97cuhJ05TOu5Y6iVGF8",
+      "ignore_paths": ["/sdks/", "/components/", "/operations/"]
+    },
+    {
+      "nome": "OpenAI API",
+      "url_base": "https://developers.openai.com/api/docs",
+      "drive_folder_id": "1NRsnEf0_my9qi97cuhJ05TOu5Y6iVGF8",
+      "ignore_paths": []
     }
   ]
 }
