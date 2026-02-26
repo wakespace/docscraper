@@ -1,4 +1,4 @@
-name: Update Documentation
+name: Update OpenRouter Documentation
 
 on:
   schedule:
@@ -32,4 +32,4 @@ jobs:
         GCP_REFRESH_TOKEN: ${{ secrets.GCP_REFRESH_TOKEN }}
         PYTHONPATH: .
       run: |
-        python main.py
+        python main.py --target "OpenRouter"

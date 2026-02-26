@@ -68,3 +68,23 @@ def test_main_continue_on_error(mock_load_config, mock_scrape, mock_gdocs_update
     # Verify second doc was still processed
     assert mock_scrape.call_count == 2
     mock_gdocs_update.assert_called_once_with("67890", "Success Doc", "# Success")
+
+@patch('main.update_drive_file')
+@patch('main.scrape_documentation')
+@patch('main.load_config')
+def test_main_with_target(mock_load_config, mock_scrape, mock_gdocs_update):
+    mock_load_config.return_value = {
+        "documentacoes": [
+            {"nome": "Target Doc", "url_base": "https://target.com", "drive_folder_id": "111"},
+            {"nome": "Other Doc", "url_base": "https://other.com", "drive_folder_id": "222"}
+        ]
+    }
+    mock_scrape.return_value = "# Extracted Content"
+    mock_gdocs_update.return_value = {"id": "111"}
+    
+    # Run with target
+    run_scraper("mock_config.json", target="Target Doc")
+    
+    # Verify only Target Doc was processed
+    mock_scrape.assert_called_once_with("https://target.com")
+    mock_gdocs_update.assert_called_once_with("111", "Target Doc", "# Extracted Content")

@@ -1,6 +1,7 @@
 import os
 import sys
 import logging
+import argparse
 
 # Ensure src directory is in path when running as a module or script
 # This helps imports when running from different locations or via Github Actions
@@ -16,10 +17,11 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-def run_scraper(config_path="docs_links.json"):
+def run_scraper(config_path="docs_links.json", target=None):
     """
     Main orchestration function.
     Loads config, iterates over projects, scrapes them and updates Google Drive.
+    If target is specified, skips any project whose 'nome' does not exactly match it.
     """
     logger.info("Starting DocScraper workflow...")
     
@@ -34,6 +36,11 @@ def run_scraper(config_path="docs_links.json"):
 
     for doc in documents:
         nome = doc["nome"]
+        
+        if target and nome != target:
+            logger.debug(f"Skipping {nome} (does not match target '{target}')")
+            continue
+            
         url_base = doc["url_base"]
         folder_id = doc["drive_folder_id"]
 
@@ -72,4 +79,9 @@ def run_scraper(config_path="docs_links.json"):
     logger.info("DocScraper workflow completed.")
 
 if __name__ == "__main__":
-    run_scraper()
+    parser = argparse.ArgumentParser(description="DocScraper: Extract documentation and update Google Drive.")
+    parser.add_argument("--config", default="docs_links.json", help="Path to the configuration file (default: docs_links.json)")
+    parser.add_argument("--target", help="Specific documentation target to process (matches 'nome' in config). If omitted, all targets are processed.")
+    args = parser.parse_args()
+    
+    run_scraper(config_path=args.config, target=args.target)
