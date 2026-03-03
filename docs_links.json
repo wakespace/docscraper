@@ -17,6 +17,12 @@
       "url_base": "https://ai.google.dev/gemini-api/docs",
       "drive_folder_id": "1NRsnEf0_my9qi97cuhJ05TOu5Y6iVGF8",
       "ignore_paths": []
+    },
+    {
+      "nome": "Perplexity API",
+      "url_base": "https://docs.perplexity.ai/docs",
+      "drive_folder_id": "1NRsnEf0_my9qi97cuhJ05TOu5Y6iVGF8",
+      "ignore_paths": []
     }
   ]
 }
