@@ -29,6 +29,12 @@
       "url_base": "https://kindlemodding.org/",
       "drive_folder_id": "1NRsnEf0_my9qi97cuhJ05TOu5Y6iVGF8",
       "ignore_paths": []
+    },
+    {
+      "nome": "Readium CSS",
+      "url_base": "https://readium.org/css/docs/",
+      "drive_folder_id": "1NRsnEf0_my9qi97cuhJ05TOu5Y6iVGF8",
+      "ignore_paths": []
     }
   ]
 }
